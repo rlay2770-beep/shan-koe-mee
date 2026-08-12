@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Shan Koe Mee - Core Game Engine V2.1</title>
+  <title>Shan Koe Mee - Auth & Core Game Engine V2.2</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
@@ -19,8 +19,70 @@
 
     h2 { color: #ffd700; margin-bottom: 2px; text-shadow: 0 2px 4px #000; }
     #status-text { font-size: 13px; color: #2ecc71; margin-bottom: 2px; font-weight: bold; }
-    #my-info { font-size: 12px; color: #f1c40f; margin-bottom: 5px; font-weight: bold; }
+    #my-info { font-size: 12px; color: #f1c40f; margin-bottom: 5px; font-weight: bold; display: flex; gap: 10px; align-items: center; }
 
+    /* Auth Modal Section */
+    .auth-overlay {
+      position: fixed;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0, 0, 0, 0.85);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+    }
+
+    .auth-box {
+      background: #1e1e1e;
+      border: 2px solid #ffd700;
+      border-radius: 12px;
+      padding: 20px;
+      width: 300px;
+      text-align: center;
+      box-shadow: 0 0 20px rgba(255, 215, 0, 0.3);
+    }
+
+    .auth-box h3 { color: #ffd700; margin-bottom: 15px; }
+    .auth-box input {
+      width: 100%;
+      padding: 8px;
+      margin: 6px 0;
+      border-radius: 5px;
+      border: 1px solid #444;
+      background: #222;
+      color: #fff;
+    }
+
+    .auth-box button {
+      width: 100%;
+      padding: 8px;
+      margin-top: 10px;
+      background: linear-gradient(180deg, #ffd700, #ff8c00);
+      border: none;
+      border-radius: 5px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .auth-toggle {
+      font-size: 11px;
+      color: #3498db;
+      margin-top: 10px;
+      cursor: pointer;
+      text-decoration: underline;
+    }
+
+    .btn-logout {
+      background: #e74c3c;
+      color: white;
+      border: none;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 10px;
+      cursor: pointer;
+    }
+
+    /* Game Table Styling */
     .table-container {
       position: relative;
       width: 360px;
@@ -34,8 +96,7 @@
 
     .table-center {
       position: absolute;
-      top: 50%;
-      left: 50%;
+      top: 50%; left: 50%;
       transform: translate(-50%, -50%);
       text-align: center;
       display: flex;
@@ -98,69 +159,37 @@
     #seat-4 { bottom: 15px; left: -12px; }
     #seat-5 { top: 85px; left: -32px; }
 
-    .player-name { font-size: 9px; color: #ffd700; font-weight: bold; text-align: center; }
+    .player-name { font-size: 8px; color: #ffd700; font-weight: bold; text-align: center; word-break: break-all; }
     .player-chips { font-size: 9px; color: #2ecc71; margin-bottom: 2px; }
 
     .cards-area {
-      display: flex;
-      gap: 2px;
-      min-height: 40px;
-      align-items: center;
-      justify-content: center;
-      margin: 2px 0;
+      display: flex; gap: 2px; min-height: 40px;
+      align-items: center; justify-content: center; margin: 2px 0;
     }
     
     .card {
-      width: 25px;
-      height: 36px;
-      background: white;
-      border-radius: 3px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      font-weight: bold;
-      font-size: 10px;
-      box-shadow: 1px 1px 3px rgba(0,0,0,0.5);
-      color: black;
-      line-height: 1;
+      width: 25px; height: 36px; background: white; border-radius: 3px;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      font-weight: bold; font-size: 10px; box-shadow: 1px 1px 3px rgba(0,0,0,0.5);
+      color: black; line-height: 1;
     }
     .card.red { color: #e74c3c; }
     .card.back { background: #2980b9; color: #fff; border: 1px solid #fff; font-size: 12px; }
 
     .score-badge {
-      background: #c0392b;
-      color: #fff;
-      padding: 1px 4px;
-      border-radius: 8px;
-      font-size: 8px;
-      font-weight: bold;
+      background: #c0392b; color: #fff; padding: 1px 4px;
+      border-radius: 8px; font-size: 8px; font-weight: bold;
     }
 
     .btn-sit {
-      background: #27ae60;
-      color: white;
-      border: none;
-      padding: 4px 8px;
-      border-radius: 4px;
-      font-size: 9px;
-      cursor: pointer;
-      margin-top: 4px;
-      font-weight: bold;
+      background: #27ae60; color: white; border: none; padding: 4px 8px;
+      border-radius: 4px; font-size: 9px; cursor: pointer; margin-top: 4px; font-weight: bold;
     }
 
-    .controls {
-      display: flex;
-      gap: 10px;
-      margin-top: 10px;
-    }
+    .controls { display: flex; gap: 10px; margin-top: 10px; }
     .btn-action {
-      padding: 8px 16px;
-      border: none;
-      border-radius: 6px;
-      font-weight: bold;
-      font-size: 12px;
-      cursor: pointer;
+      padding: 8px 16px; border: none; border-radius: 6px;
+      font-weight: bold; font-size: 12px; cursor: pointer;
       box-shadow: 0 4px 6px rgba(0,0,0,0.3);
     }
     .btn-draw { background: #2980b9; color: white; }
@@ -170,9 +199,23 @@
 </head>
 <body>
 
-  <h2>ရှမ်းကိုးမီး (Shan Koe Mee - Core V2.1)</h2>
+  <!-- Auth Overlay (Login / Register) -->
+  <div class="auth-overlay" id="auth-modal">
+    <div class="auth-box">
+      <h3 id="auth-title">အကောင့်ဝင်ရန်</h3>
+      <input type="email" id="auth-email" placeholder="Email ရိုက်ပါ">
+      <input type="password" id="auth-password" placeholder="Password ရိုက်ပါ">
+      <button id="btn-auth-submit" onclick="handleAuth()">ဝင်မည်</button>
+      <div class="auth-toggle" id="auth-toggle-btn" onclick="toggleAuthMode()">အကောင့်သစ်ဖွင့်ရန်</div>
+    </div>
+  </div>
+
+  <h2>ရှမ်းကိုးမီး (Shan Koe Mee - Core V2.2)</h2>
   <div id="status-text">ချိတ်ဆက်နေပါသည်...</div>
-  <div id="my-info">သင်၏ ID: -</div>
+  <div id="my-info">
+    <span id="user-display">သင်၏ ID: -</span>
+    <button class="btn-logout" id="btn-logout" onclick="handleLogout()" style="display:none;">အကောင့်ထွက်</button>
+  </div>
 
   <div class="table-container">
     <div class="table-center">
@@ -230,9 +273,9 @@
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+    import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
     import { getFirestore, doc, getDoc, setDoc, onSnapshot, updateDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
-    // မူရင်း API Config ထည့်သွင်းထားသည်
     const firebaseConfig = {
       apiKey: "AIzaSyCGbDq36IIqZMhRafP25dCskl_enpaPW5Q",
       authDomain: "v-platfrom.firebaseapp.com",
@@ -244,21 +287,69 @@
     };
 
     const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
     const db = getFirestore(app);
     const roomRef = doc(db, "rooms", "main_room_v2");
 
-    let myId = localStorage.getItem("skm_user_id");
-    if (!myId) {
-      myId = "Player_" + Math.floor(1000 + Math.random() * 9000);
-      localStorage.setItem("skm_user_id", myId);
-    }
-    document.getElementById("my-info").innerText = `သင်၏ ID: ${myId}`;
-
+    let currentUser = null;
+    let isLoginMode = true;
     let currentRoomData = null;
     const BET_AMOUNT = 500;
 
     const cardSuits = ["♠", "♥", "♦", "♣"];
     const cardFaces = ["A", "2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K"];
+
+    // AUTH FUNCTIONS
+    window.toggleAuthMode = function() {
+      isLoginMode = !isLoginMode;
+      document.getElementById("auth-title").innerText = isLoginMode ? "အကောင့်ဝင်ရန်" : "အကောင့်သစ်ဖွင့်ရန်";
+      document.getElementById("btn-auth-submit").innerText = isLoginMode ? "ဝင်မည်" : "အကောင့်ဖွင့်မည်";
+      document.getElementById("auth-toggle-btn").innerText = isLoginMode ? "အကောင့်သစ်ဖွင့်ရန်" : "အကောင့်ရှိပြီးသား စကားဝှက်ရိုက်ဝင်မည်";
+    };
+
+    window.handleAuth = async function() {
+      const email = document.getElementById("auth-email").value;
+      const password = document.getElementById("auth-password").value;
+
+      if (!email || !password) return alert("Email နှင့် Password ဖြည့်ပါ!");
+
+      try {
+        if (isLoginMode) {
+          await signInWithEmailAndPassword(auth, email, password);
+        } else {
+          await createUserWithEmailAndPassword(auth, email, password);
+        }
+      } catch (err) {
+        alert("အမှားအယွင်းရှိပါသည်: " + err.message);
+      }
+    };
+
+    window.handleLogout = async function() {
+      if (currentUser) {
+        let mySeat = getMySeatKey();
+        if (mySeat) {
+          let updates = {};
+          updates[`seats.${mySeat}`] = null;
+          await updateDoc(roomRef, updates);
+        }
+      }
+      await signOut(auth);
+    };
+
+    onAuthStateChanged(auth, (user) => {
+      if (user) {
+        currentUser = user;
+        document.getElementById("auth-modal").style.display = "none";
+        document.getElementById("user-display").innerText = `User: ${user.email.split('@')[0]}`;
+        document.getElementById("btn-logout").style.display = "inline-block";
+        startApp();
+      } else {
+        currentUser = null;
+        document.getElementById("auth-modal").style.display = "flex";
+        document.getElementById("user-display").innerText = `သင်၏ ID: -`;
+        document.getElementById("btn-logout").style.display = "none";
+      }
+    });
 
     function createShuffledDeck() {
       let deck = [];
@@ -281,9 +372,9 @@
     }
 
     function getMySeatKey() {
-      if (!currentRoomData || !currentRoomData.seats) return null;
+      if (!currentRoomData || !currentRoomData.seats || !currentUser) return null;
       for (let i = 1; i <= 5; i++) {
-        if (currentRoomData.seats[`seat${i}`] && currentRoomData.seats[`seat${i}`].id === myId) {
+        if (currentRoomData.seats[`seat${i}`] && currentRoomData.seats[`seat${i}`].id === currentUser.uid) {
           return `seat${i}`;
         }
       }
@@ -312,9 +403,8 @@
       });
     }
 
-    startApp();
-
     window.sitDown = async function(seatNum) {
+      if (!currentUser) return alert("အကောင့် မဝင်ရသေးပါ!");
       const targetSeat = `seat${seatNum}`;
       const snap = await getDoc(roomRef);
       const seats = snap.data().seats || {};
@@ -326,9 +416,10 @@
       if (currentSeat) updates[`seats.${currentSeat}`] = null;
 
       const isDealer = (seatNum === 1);
+      const uName = currentUser.email.split('@')[0];
       updates[`seats.${targetSeat}`] = {
-        id: myId,
-        name: isDealer ? "🏦 ဒိုင် (" + myId + ")" : myId,
+        id: currentUser.uid,
+        name: isDealer ? "🏦 ဒိုင် (" + uName + ")" : uName,
         chips: isDealer ? 50000 : 10000,
         cards: [],
         score: 0,
@@ -356,7 +447,7 @@
         if (seats[sKey]) {
           let currentChips = Number(seats[sKey].chips) || 10000;
           
-          if (i !== 1) { // Player ထိုးကြေး
+          if (i !== 1) {
             if (currentChips < BET_AMOUNT) {
               updates[`seats.${sKey}`] = null;
               continue;
@@ -453,12 +544,10 @@
           status: `${nextTurn.toUpperCase()} ၏ ဖဲဆွဲအလှည့် ဖြစ်ပါသည်`
         });
       } else {
-        // Player အားလုံးပြီးလျှင် ဒိုင်အလှည့် (Dealer Engine Execution)
         runDealerEngine();
       }
     }
 
-    // Dealer Auto Engine & Settlement System
     async function runDealerEngine() {
       await updateDoc(roomRef, {
         currentTurn: "seat1",
@@ -470,7 +559,6 @@
       let dealer = room.seats.seat1;
       let deck = room.deck;
 
-      // ဒိုင် ဖဲဆွဲ စည်းမျဉ်း (၆ ပေါက် အောက်ဆိုလျှင် ဖဲဆွဲမည်)
       if (dealer.score < 6 && dealer.cards.length < 3 && deck.length > 0) {
         let card = deck.pop();
         dealer.cards.push(card);
@@ -479,9 +567,7 @@
 
       dealer.hasStayed = true;
       
-      // Settlement Logic (အရော်အစား)
       let dealerChips = dealer.chips;
-      let totalPot = room.pot;
       let seats = room.seats;
       seats.seat1 = dealer;
 
@@ -491,12 +577,12 @@
           let pScore = seats[sKey].score;
           let dScore = dealer.score;
 
-          if (pScore > dScore) { // Player နိုင်
+          if (pScore > dScore) {
             seats[sKey].chips += (BET_AMOUNT * 2);
             dealerChips -= BET_AMOUNT;
-          } else if (pScore === dScore) { // သရေ
+          } else if (pScore === dScore) {
             seats[sKey].chips += BET_AMOUNT;
-          } else { // ဒိုင်နိုင်
+          } else {
             dealerChips += BET_AMOUNT;
           }
         }
@@ -512,7 +598,7 @@
       });
     }
 
-    window.resetRound = async function() {
+   window.resetRound = async function() {
       const snap = await getDoc(roomRef);
       const seats = snap.data().seats || {};
       let updates = { 
@@ -601,5 +687,4 @@
     }
   </script>
 </body>
-  </html>
-        
+</html
