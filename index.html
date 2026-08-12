@@ -1,0 +1,605 @@
+<!DOCTYPE html>
+<html lang="my">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Shan Koe Mee - Core Game Engine V2.1</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background-color: #121212;
+      color: #fff;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+      padding: 10px;
+    }
+
+    h2 { color: #ffd700; margin-bottom: 2px; text-shadow: 0 2px 4px #000; }
+    #status-text { font-size: 13px; color: #2ecc71; margin-bottom: 2px; font-weight: bold; }
+    #my-info { font-size: 12px; color: #f1c40f; margin-bottom: 5px; font-weight: bold; }
+
+    .table-container {
+      position: relative;
+      width: 360px;
+      height: 470px;
+      background: radial-gradient(circle, #1b662f 60%, #0a3314 100%);
+      border: 10px solid #4a2810;
+      border-radius: 170px;
+      box-shadow: inset 0 0 30px #000, 0 10px 20px rgba(0,0,0,0.8);
+      margin: 5px 0;
+    }
+
+    .table-center {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .pot-chips {
+      background: #f1c40f;
+      color: #000;
+      font-weight: bold;
+      padding: 4px 10px;
+      border-radius: 15px;
+      font-size: 11px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.6);
+    }
+
+    .btn-main {
+      padding: 6px 12px;
+      background: linear-gradient(180deg, #ffd700, #ff8c00);
+      color: #000;
+      border: none;
+      font-weight: bold;
+      font-size: 11px;
+      border-radius: 15px;
+      cursor: pointer;
+      box-shadow: 0 3px 6px rgba(0,0,0,0.5);
+    }
+
+    .seat {
+      position: absolute;
+      width: 98px;
+      min-height: 125px;
+      background: rgba(0, 0, 0, 0.85);
+      border: 2px solid #ffd700;
+      border-radius: 8px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 4px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.5);
+    }
+
+    .seat.active-turn {
+      border: 2px solid #00ffcc !important;
+      box-shadow: 0 0 15px #00ffcc;
+      animation: pulse 1.5s infinite;
+    }
+
+    @keyframes pulse {
+      0% { box-shadow: 0 0 5px #00ffcc; }
+      50% { box-shadow: 0 0 18px #00ffcc; }
+      100% { box-shadow: 0 0 5px #00ffcc; }
+    }
+
+    #seat-1 { top: -25px; left: 131px; border-color: #e74c3c; }
+    #seat-2 { top: 85px; right: -32px; }
+    #seat-3 { bottom: 15px; right: -12px; }
+    #seat-4 { bottom: 15px; left: -12px; }
+    #seat-5 { top: 85px; left: -32px; }
+
+    .player-name { font-size: 9px; color: #ffd700; font-weight: bold; text-align: center; }
+    .player-chips { font-size: 9px; color: #2ecc71; margin-bottom: 2px; }
+
+    .cards-area {
+      display: flex;
+      gap: 2px;
+      min-height: 40px;
+      align-items: center;
+      justify-content: center;
+      margin: 2px 0;
+    }
+    
+    .card {
+      width: 25px;
+      height: 36px;
+      background: white;
+      border-radius: 3px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      font-size: 10px;
+      box-shadow: 1px 1px 3px rgba(0,0,0,0.5);
+      color: black;
+      line-height: 1;
+    }
+    .card.red { color: #e74c3c; }
+    .card.back { background: #2980b9; color: #fff; border: 1px solid #fff; font-size: 12px; }
+
+    .score-badge {
+      background: #c0392b;
+      color: #fff;
+      padding: 1px 4px;
+      border-radius: 8px;
+      font-size: 8px;
+      font-weight: bold;
+    }
+
+    .btn-sit {
+      background: #27ae60;
+      color: white;
+      border: none;
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 9px;
+      cursor: pointer;
+      margin-top: 4px;
+      font-weight: bold;
+    }
+
+    .controls {
+      display: flex;
+      gap: 10px;
+      margin-top: 10px;
+    }
+    .btn-action {
+      padding: 8px 16px;
+      border: none;
+      border-radius: 6px;
+      font-weight: bold;
+      font-size: 12px;
+      cursor: pointer;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+    }
+    .btn-draw { background: #2980b9; color: white; }
+    .btn-stay { background: #d35400; color: white; }
+    .btn-action:disabled { background: #555; cursor: not-allowed; opacity: 0.6; }
+  </style>
+</head>
+<body>
+
+  <h2>ရှမ်းကိုးမီး (Shan Koe Mee - Core V2.1)</h2>
+  <div id="status-text">ချိတ်ဆက်နေပါသည်...</div>
+  <div id="my-info">သင်၏ ID: -</div>
+
+  <div class="table-container">
+    <div class="table-center">
+      <div class="pot-chips" id="pot-display">ဝိုင်းကြေး: 0 Chips 🪙</div>
+      <button class="btn-main" onclick="dealCards()">ဖဲဝေမည် (ကြေး 500) ♠️</button>
+      <button class="btn-main" style="background: #27ae60; color: #fff;" onclick="resetRound()">ပွဲစဉ်သစ်စမည် 🔄</button>
+    </div>
+
+    <!-- Seats 1 to 5 -->
+    <div class="seat" id="seat-1">
+      <span class="player-name">Seat 1 (🏦 ဒိုင်)</span>
+      <span class="player-chips" id="chips-1">Chips: -</span>
+      <div class="cards-area" id="cards-1"></div>
+      <span class="score-badge" id="score-1">-</span>
+      <button class="btn-sit" onclick="sitDown(1)">ထိုင်မည်</button>
+    </div>
+
+    <div class="seat" id="seat-2">
+      <span class="player-name">Seat 2</span>
+      <span class="player-chips" id="chips-2">Chips: -</span>
+      <div class="cards-area" id="cards-2"></div>
+      <span class="score-badge" id="score-2">-</span>
+      <button class="btn-sit" onclick="sitDown(2)">ထိုင်မည်</button>
+    </div>
+
+    <div class="seat" id="seat-3">
+      <span class="player-name">Seat 3</span>
+      <span class="player-chips" id="chips-3">Chips: -</span>
+      <div class="cards-area" id="cards-3"></div>
+      <span class="score-badge" id="score-3">-</span>
+      <button class="btn-sit" onclick="sitDown(3)">ထိုင်မည်</button>
+    </div>
+
+    <div class="seat" id="seat-4">
+      <span class="player-name">Seat 4</span>
+      <span class="player-chips" id="chips-4">Chips: -</span>
+      <div class="cards-area" id="cards-4"></div>
+      <span class="score-badge" id="score-4">-</span>
+      <button class="btn-sit" onclick="sitDown(4)">ထိုင်မည်</button>
+    </div>
+
+    <div class="seat" id="seat-5">
+      <span class="player-name">Seat 5</span>
+      <span class="player-chips" id="chips-5">Chips: -</span>
+      <div class="cards-area" id="cards-5"></div>
+      <span class="score-badge" id="score-5">-</span>
+      <button class="btn-sit" onclick="sitDown(5)">ထိုင်မည်</button>
+    </div>
+  </div>
+
+  <div class="controls">
+    <button class="btn-action btn-draw" id="btn-draw-card" onclick="drawCard()">ဖဲ ၁ ရွက်ဆွဲမည် 🃏</button>
+    <button class="btn-action btn-stay" id="btn-stay-card" onclick="stay()">မဆွဲတော့ပါ 🛑</button>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+    import { getFirestore, doc, getDoc, setDoc, onSnapshot, updateDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+    // မူရင်း API Config ထည့်သွင်းထားသည်
+    const firebaseConfig = {
+      apiKey: "AIzaSyCGbDq36IIqZMhRafP25dCskl_enpaPW5Q",
+      authDomain: "v-platfrom.firebaseapp.com",
+      databaseURL: "https://v-platfrom-default-rtdb.firebaseio.com",
+      projectId: "v-platfrom",
+      storageBucket: "v-platfrom.firebasestorage.app",
+      messagingSenderId: "602846814555",
+      appId: "1:602846814555:web:4130c05d1fef3c688bfa7e"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const roomRef = doc(db, "rooms", "main_room_v2");
+
+    let myId = localStorage.getItem("skm_user_id");
+    if (!myId) {
+      myId = "Player_" + Math.floor(1000 + Math.random() * 9000);
+      localStorage.setItem("skm_user_id", myId);
+    }
+    document.getElementById("my-info").innerText = `သင်၏ ID: ${myId}`;
+
+    let currentRoomData = null;
+    const BET_AMOUNT = 500;
+
+    const cardSuits = ["♠", "♥", "♦", "♣"];
+    const cardFaces = ["A", "2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K"];
+
+    function createShuffledDeck() {
+      let deck = [];
+      for (let s of cardSuits) {
+        for (let f of cardFaces) {
+          deck.push({ face: f, suit: s });
+        }
+      }
+      for (let i = deck.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [deck[i], deck[j]] = [deck[j], deck[i]];
+      }
+      return deck;
+    }
+
+    function getCardValue(face) {
+      if (["J", "Q", "K", "10"].includes(face)) return 0;
+      if (face === "A") return 1;
+      return parseInt(face);
+    }
+
+    function getMySeatKey() {
+      if (!currentRoomData || !currentRoomData.seats) return null;
+      for (let i = 1; i <= 5; i++) {
+        if (currentRoomData.seats[`seat${i}`] && currentRoomData.seats[`seat${i}`].id === myId) {
+          return `seat${i}`;
+        }
+      }
+      return null;
+    }
+
+    async function startApp() {
+      const docSnap = await getDoc(roomRef);
+      if (!docSnap.exists()) {
+        await setDoc(roomRef, {
+          status: "စောင့်ဆိုင်းနေသည် (ထိုင်ခုံယူပါ)",
+          gameState: "WAITING",
+          pot: 0,
+          currentTurn: null,
+          deck: [],
+          dealerSeat: "seat1",
+          seats: { seat1: null, seat2: null, seat3: null, seat4: null, seat5: null }
+        });
+      }
+
+      onSnapshot(roomRef, (snapshot) => {
+        if (snapshot.exists()) {
+          currentRoomData = snapshot.data();
+          updateUI();
+        }
+      });
+    }
+
+    startApp();
+
+    window.sitDown = async function(seatNum) {
+      const targetSeat = `seat${seatNum}`;
+      const snap = await getDoc(roomRef);
+      const seats = snap.data().seats || {};
+
+      if (seats[targetSeat]) return alert("ဒီထိုင်ခုံမှာ လူရှိနေပါပြီ!");
+
+      let currentSeat = getMySeatKey();
+      let updates = {};
+      if (currentSeat) updates[`seats.${currentSeat}`] = null;
+
+      const isDealer = (seatNum === 1);
+      updates[`seats.${targetSeat}`] = {
+        id: myId,
+        name: isDealer ? "🏦 ဒိုင် (" + myId + ")" : myId,
+        chips: isDealer ? 50000 : 10000,
+        cards: [],
+        score: 0,
+        hasStayed: false
+      };
+
+      await updateDoc(roomRef, updates);
+    };
+
+    window.dealCards = async function() {
+      const snap = await getDoc(roomRef);
+      const seats = snap.data().seats || {};
+
+      if (!seats.seat1) return alert("ဝိုင်းစရန်အတွက် Seat 1 တွင် ဒိုင် ထိုင်ရပါမည်!");
+
+      let deck = createShuffledDeck();
+      let updates = { 
+        gameState: "PLAYER_TURN", 
+        pot: 0 
+      };
+      let activePlayers = [];
+
+      for (let i = 1; i <= 5; i++) {
+        const sKey = `seat${i}`;
+        if (seats[sKey]) {
+          let currentChips = Number(seats[sKey].chips) || 10000;
+          
+          if (i !== 1) { // Player ထိုးကြေး
+            if (currentChips < BET_AMOUNT) {
+              updates[`seats.${sKey}`] = null;
+              continue;
+            }
+            updates[`seats.${sKey}.chips`] = currentChips - BET_AMOUNT;
+            updates.pot += BET_AMOUNT;
+            activePlayers.push(sKey);
+          }
+
+          let c1 = deck.pop();
+          let c2 = deck.pop();
+          let score = (getCardValue(c1.face) + getCardValue(c2.face)) % 10;
+
+          updates[`seats.${sKey}.cards`] = [c1, c2];
+          updates[`seats.${sKey}.score`] = score;
+          updates[`seats.${sKey}.hasStayed`] = (i === 1) ? false : (score >= 8); 
+        }
+      }
+
+      if (activePlayers.length === 0) return alert("ကစားမည့် Player များ မရှိသေးပါ!");
+
+      updates.deck = deck;
+      const firstTurnPlayer = activePlayers.find(s => !updates[`seats.${s}.hasStayed`]) || activePlayers[0];
+      updates.currentTurn = firstTurnPlayer;
+      updates.status = `${firstTurnPlayer.toUpperCase()} ၏ ဖဲဆွဲအလှည့် ဖြစ်ပါသည်`;
+
+      await updateDoc(roomRef, updates);
+    };
+
+    window.drawCard = async function() {
+      let mySeat = getMySeatKey();
+      if (!mySeat) return alert("ထိုင်ခုံ အရင်ယူပါ!");
+      if (mySeat === "seat1") return alert("ဒိုင်သည် Player များ အားလုံးပြီးမှ ဖဲဆွဲခွင့်ရှိပါမည်!");
+      if (currentRoomData.currentTurn !== mySeat) return alert("သင်၏ အလှည့် မဟုတ်သေးပါ!");
+
+      const snap = await getDoc(roomRef);
+      const room = snap.data();
+      const myData = room.seats[mySeat];
+
+      if (myData.cards.length >= 3) return alert("ဖဲ ၃ ရွက် ပြည့်နေပါပြီ!");
+      if (myData.score >= 8) return alert("Pok မိထားသဖြင့် ဆွဲရန် မလိုပါ!");
+
+      let deck = room.deck || [];
+      if (deck.length === 0) return alert("ဖဲထုပ် ထဲတွင် ဖဲကုန်သွားပါပြီ!");
+
+      let drawnCard = deck.pop();
+      let newCards = [...myData.cards, drawnCard];
+      let newScore = newCards.reduce((acc, c) => acc + getCardValue(c.face), 0) % 10;
+
+      let updates = {
+        [`seats.${mySeat}.cards`]: newCards,
+        [`seats.${mySeat}.score`]: newScore,
+        [`seats.${mySeat}.hasStayed`]: true,
+        deck: deck
+      };
+
+      await updateDoc(roomRef, updates);
+      passTurnToNext(mySeat);
+    };
+
+    window.stay = async function() {
+      let mySeat = getMySeatKey();
+      if (!mySeat) return alert("ထိုင်ခုံ အရင်ယူပါ!");
+      if (mySeat === "seat1") return alert("ဒိုင် အလှည့် မဟုတ်သေးပါ!");
+      if (currentRoomData.currentTurn !== mySeat) return alert("သင်၏ အလှည့် မဟုတ်သေးပါ!");
+
+      await updateDoc(roomRef, {
+        [`seats.${mySeat}.hasStayed`]: true
+      });
+
+      passTurnToNext(mySeat);
+    };
+
+    async function passTurnToNext(currentSeatKey) {
+      const snap = await getDoc(roomRef);
+      const seats = snap.data().seats || {};
+
+      const playerSeatKeys = ["seat2", "seat3", "seat4", "seat5"];
+      let currentIndex = playerSeatKeys.indexOf(currentSeatKey);
+
+      let nextTurn = null;
+      for (let i = 1; i <= 4; i++) {
+        let checkIndex = (currentIndex + i) % 4;
+        let candidateKey = playerSeatKeys[checkIndex];
+        if (seats[candidateKey] && !seats[candidateKey].hasStayed) {
+          nextTurn = candidateKey;
+          break;
+        }
+      }
+
+      if (nextTurn) {
+        await updateDoc(roomRef, {
+          currentTurn: nextTurn,
+          status: `${nextTurn.toUpperCase()} ၏ ဖဲဆွဲအလှည့် ဖြစ်ပါသည်`
+        });
+      } else {
+        // Player အားလုံးပြီးလျှင် ဒိုင်အလှည့် (Dealer Engine Execution)
+        runDealerEngine();
+      }
+    }
+
+    // Dealer Auto Engine & Settlement System
+    async function runDealerEngine() {
+      await updateDoc(roomRef, {
+        currentTurn: "seat1",
+        status: "🏦 ဒိုင် ဖဲလှန်/ဆွဲနေသည်..."
+      });
+
+      const snap = await getDoc(roomRef);
+      let room = snap.data();
+      let dealer = room.seats.seat1;
+      let deck = room.deck;
+
+      // ဒိုင် ဖဲဆွဲ စည်းမျဉ်း (၆ ပေါက် အောက်ဆိုလျှင် ဖဲဆွဲမည်)
+      if (dealer.score < 6 && dealer.cards.length < 3 && deck.length > 0) {
+        let card = deck.pop();
+        dealer.cards.push(card);
+        dealer.score = dealer.cards.reduce((acc, c) => acc + getCardValue(c.face), 0) % 10;
+      }
+
+      dealer.hasStayed = true;
+      
+      // Settlement Logic (အရော်အစား)
+      let dealerChips = dealer.chips;
+      let totalPot = room.pot;
+      let seats = room.seats;
+      seats.seat1 = dealer;
+
+      for (let i = 2; i <= 5; i++) {
+        let sKey = `seat${i}`;
+        if (seats[sKey] && seats[sKey].cards.length > 0) {
+          let pScore = seats[sKey].score;
+          let dScore = dealer.score;
+
+          if (pScore > dScore) { // Player နိုင်
+            seats[sKey].chips += (BET_AMOUNT * 2);
+            dealerChips -= BET_AMOUNT;
+          } else if (pScore === dScore) { // သရေ
+            seats[sKey].chips += BET_AMOUNT;
+          } else { // ဒိုင်နိုင်
+            dealerChips += BET_AMOUNT;
+          }
+        }
+      }
+
+      seats.seat1.chips = dealerChips;
+
+      await updateDoc(roomRef, {
+        seats: seats,
+        currentTurn: "END",
+        gameState: "RESULT",
+        status: "ပွဲပြီးပါပြီ! ဒိုင် နှင့် Player များ အနိုင်အရှုံး စာရင်းရှင်းပြီးပါပြီ။"
+      });
+    }
+
+    window.resetRound = async function() {
+      const snap = await getDoc(roomRef);
+      const seats = snap.data().seats || {};
+      let updates = { 
+        status: "စောင့်ဆိုင်းနေသည် (ဖဲဝေပါ)", 
+        gameState: "WAITING",
+        currentTurn: null, 
+        pot: 0, 
+        deck: [] 
+      };
+
+      for (let i = 1; i <= 5; i++) {
+        const sKey = `seat${i}`;
+        if (seats[sKey]) {
+          updates[`seats.${sKey}.cards`] = [];
+          updates[`seats.${sKey}.score`] = 0;
+          updates[`seats.${sKey}.hasStayed`] = false;
+        }
+      }
+      await updateDoc(roomRef, updates);
+    };
+
+    function updateUI() {
+      if (!currentRoomData) return;
+
+      document.getElementById("status-text").innerText = "Status: " + currentRoomData.status;
+      document.getElementById("pot-display").innerText = `ဝိုင်းကြေး: ${currentRoomData.pot || 0} Chips 🪙`;
+
+      let mySeatKey = getMySeatKey();
+      let isMyTurn = (currentRoomData.currentTurn === mySeatKey) && mySeatKey !== null && mySeatKey !== "seat1";
+
+      document.getElementById("btn-draw-card").disabled = !isMyTurn;
+      document.getElementById("btn-stay-card").disabled = !isMyTurn;
+
+      const seats = currentRoomData.seats || {};
+
+      for (let i = 1; i <= 5; i++) {
+        const seatKey = `seat${i}`;
+        const seatData = seats[seatKey];
+        const seatElem = document.getElementById(`seat-${i}`);
+        const cardsElem = document.getElementById(`cards-${i}`);
+        const scoreElem = document.getElementById(`score-${i}`);
+        const chipsElem = document.getElementById(`chips-${i}`);
+
+        if (currentRoomData.currentTurn === seatKey) {
+          seatElem.classList.add("active-turn");
+        } else {
+          seatElem.classList.remove("active-turn");
+        }
+
+        if (seatData) {
+          seatElem.querySelector('.player-name').innerText = seatData.name;
+          chipsElem.innerText = `Chips: ${seatData.chips}`;
+          seatElem.querySelector('.btn-sit').style.display = 'none';
+
+          cardsElem.innerHTML = '';
+          const isMySeat = (mySeatKey === seatKey);
+          const isRoundEnd = currentRoomData.currentTurn === "END";
+
+          if (seatData.cards && seatData.cards.length > 0) {
+            seatData.cards.forEach(c => {
+              if (isMySeat || isRoundEnd) {
+                const isRed = (c.suit === "♥" || c.suit === "♦") ? "red" : "";
+                cardsElem.innerHTML += `<div class="card ${isRed}">${c.face}<br>${c.suit}</div>`;
+              } else {
+                cardsElem.innerHTML += `<div class="card back">♠</div>`;
+              }
+            });
+
+            if (isMySeat || isRoundEnd) {
+              let pText = seatData.score === 9 ? "၉ ပေါက် (Pok)" : seatData.score === 8 ? "၈ ပေါက် (Pok)" : `${seatData.score} ပေါက်`;
+              scoreElem.innerText = pText;
+            } else {
+              scoreElem.innerText = '???';
+            }
+          } else {
+            scoreElem.innerText = '-';
+          }
+        } else {
+          seatElem.querySelector('.player-name').innerText = (i === 1) ? "Seat 1 (🏦 ဒိုင်)" : `Seat ${i}`;
+          chipsElem.innerText = 'Chips: -';
+          seatElem.querySelector('.btn-sit').style.display = 'block';
+          cardsElem.innerHTML = '';
+          scoreElem.innerText = '-';
+        }
+      }
+    }
+  </script>
+</body>
+  </html>
+        
