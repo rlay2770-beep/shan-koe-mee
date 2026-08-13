@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Shan Koe Mee - Auth & Core Game Engine V2.2</title>
+  <title>Shan Koe Mee - Core Game Engine V2.3</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
@@ -21,11 +21,11 @@
     #status-text { font-size: 13px; color: #2ecc71; margin-bottom: 2px; font-weight: bold; }
     #my-info { font-size: 12px; color: #f1c40f; margin-bottom: 5px; font-weight: bold; display: flex; gap: 10px; align-items: center; }
 
-    /* Auth Modal Section */
+    /* Auth Overlay Section */
     .auth-overlay {
       position: fixed;
       top: 0; left: 0; width: 100%; height: 100%;
-      background: rgba(0, 0, 0, 0.85);
+      background: rgba(0, 0, 0, 0.88);
       display: flex;
       justify-content: center;
       align-items: center;
@@ -39,7 +39,7 @@
       padding: 20px;
       width: 300px;
       text-align: center;
-      box-shadow: 0 0 20px rgba(255, 215, 0, 0.3);
+      box-shadow: 0 0 20px rgba(255, 215, 0, 0.4);
     }
 
     .auth-box h3 { color: #ffd700; margin-bottom: 15px; }
@@ -199,7 +199,7 @@
 </head>
 <body>
 
-  <!-- Auth Overlay (Login / Register) -->
+  <!-- Auth Modal System -->
   <div class="auth-overlay" id="auth-modal">
     <div class="auth-box">
       <h3 id="auth-title">အကောင့်ဝင်ရန်</h3>
@@ -210,7 +210,7 @@
     </div>
   </div>
 
-  <h2>ရှမ်းကိုးမီး (Shan Koe Mee - Core V2.2)</h2>
+  <h2>ရှမ်းကိုးမီး (Shan Koe Mee - Core V2.3)</h2>
   <div id="status-text">ချိတ်ဆက်နေပါသည်...</div>
   <div id="my-info">
     <span id="user-display">သင်၏ ID: -</span>
@@ -267,8 +267,8 @@
   </div>
 
   <div class="controls">
-    <button class="btn-action btn-draw" id="btn-draw-card" onclick="drawCard()">ဖဲ ၁ ရွက်ဆွဲမည် 🃏</button>
-    <button class="btn-action btn-stay" id="btn-stay-card" onclick="stay()">မဆွဲတော့ပါ 🛑</button>
+    <button class="btn-action btn-draw" id="btn-draw-card" onclick="drawCard()" disabled>ဖဲ ၁ ရွက်ဆွဲမည် 🃏</button>
+    <button class="btn-action btn-stay" id="btn-stay-card" onclick="stay()" disabled>မဆွဲတော့ပါ 🛑</button>
   </div>
 
   <script type="module">
@@ -299,7 +299,7 @@
     const cardSuits = ["♠", "♥", "♦", "♣"];
     const cardFaces = ["A", "2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K"];
 
-    // AUTH FUNCTIONS
+    // AUTH MANAGEMENT
     window.toggleAuthMode = function() {
       isLoginMode = !isLoginMode;
       document.getElementById("auth-title").innerText = isLoginMode ? "အကောင့်ဝင်ရန်" : "အကောင့်သစ်ဖွင့်ရန်";
@@ -374,7 +374,8 @@
     function getMySeatKey() {
       if (!currentRoomData || !currentRoomData.seats || !currentUser) return null;
       for (let i = 1; i <= 5; i++) {
-        if (currentRoomData.seats[`seat${i}`] && currentRoomData.seats[`seat${i}`].id === currentUser.uid) {
+        const seat = currentRoomData.seats[`seat${i}`];
+        if (seat && seat.id === currentUser.uid) {
           return `seat${i}`;
         }
       }
@@ -442,6 +443,7 @@
       };
       let activePlayers = [];
 
+      // ထိုင်နေသည့် လူရှိသော ခုံများကိုသာ ဖဲဝေပေးမည်
       for (let i = 1; i <= 5; i++) {
         const sKey = `seat${i}`;
         if (seats[sKey]) {
@@ -464,6 +466,9 @@
           updates[`seats.${sKey}.cards`] = [c1, c2];
           updates[`seats.${sKey}.score`] = score;
           updates[`seats.${sKey}.hasStayed`] = (i === 1) ? false : (score >= 8); 
+        } else {
+          // ခုံလွတ်ဖြစ်ပါက ဖဲနှင့် score များကို သန့်ရှင်းပေးထားမည်
+          updates[`seats.${sKey}`] = null;
         }
       }
 
@@ -487,6 +492,7 @@
       const room = snap.data();
       const myData = room.seats[mySeat];
 
+      if (!myData || !myData.cards) return;
       if (myData.cards.length >= 3) return alert("ဖဲ ၃ ရွက် ပြည့်နေပါပြီ!");
       if (myData.score >= 8) return alert("Pok မိထားသဖြင့် ဆွဲရန် မလိုပါ!");
 
@@ -559,21 +565,20 @@
       let dealer = room.seats.seat1;
       let deck = room.deck;
 
-      if (dealer.score < 6 && dealer.cards.length < 3 && deck.length > 0) {
+      if (dealer && dealer.score < 6 && dealer.cards.length < 3 && deck.length > 0) {
         let card = deck.pop();
         dealer.cards.push(card);
         dealer.score = dealer.cards.reduce((acc, c) => acc + getCardValue(c.face), 0) % 10;
       }
 
-      dealer.hasStayed = true;
+      if (dealer) dealer.hasStayed = true;
       
-      let dealerChips = dealer.chips;
+      let dealerChips = dealer ? dealer.chips : 0;
       let seats = room.seats;
-      seats.seat1 = dealer;
 
       for (let i = 2; i <= 5; i++) {
         let sKey = `seat${i}`;
-        if (seats[sKey] && seats[sKey].cards.length > 0) {
+        if (seats[sKey] && seats[sKey].cards && seats[sKey].cards.length > 0) {
           let pScore = seats[sKey].score;
           let dScore = dealer.score;
 
@@ -588,7 +593,7 @@
         }
       }
 
-      seats.seat1.chips = dealerChips;
+      if (dealer) seats.seat1.chips = dealerChips;
 
       await updateDoc(roomRef, {
         seats: seats,
@@ -598,7 +603,7 @@
       });
     }
 
-   window.resetRound = async function() {
+    window.resetRound = async function() {
       const snap = await getDoc(roomRef);
       const seats = snap.data().seats || {};
       let updates = { 
@@ -629,6 +634,7 @@
       let mySeatKey = getMySeatKey();
       let isMyTurn = (currentRoomData.currentTurn === mySeatKey) && mySeatKey !== null && mySeatKey !== "seat1";
 
+      // အလှည့်ရောက်မှ ခလုတ်များ ပွင့်မည်
       document.getElementById("btn-draw-card").disabled = !isMyTurn;
       document.getElementById("btn-stay-card").disabled = !isMyTurn;
 
@@ -655,10 +661,11 @@
 
           cardsElem.innerHTML = '';
           const isMySeat = (mySeatKey === seatKey);
-          const isRoundEnd = currentRoomData.currentTurn === "END";
+          const isRoundEnd = (currentRoomData.currentTurn === "END");
 
           if (seatData.cards && seatData.cards.length > 0) {
             seatData.cards.forEach(c => {
+              // မိမိကိုယ်တိုင် သို့မဟုတ် ပွဲပြီးချိန်တွင် ဖဲလှန်ပြမည်
               if (isMySeat || isRoundEnd) {
                 const isRed = (c.suit === "♥" || c.suit === "♦") ? "red" : "";
                 cardsElem.innerHTML += `<div class="card ${isRed}">${c.face}<br>${c.suit}</div>`;
@@ -677,6 +684,7 @@
             scoreElem.innerText = '-';
           }
         } else {
+          // ခုံလွတ်ဖြစ်လျှင် ကစားသမားမရှိပါက ဖဲများ စာရင်းများ ပျောက်နေမည်
           seatElem.querySelector('.player-name').innerText = (i === 1) ? "Seat 1 (🏦 ဒိုင်)" : `Seat ${i}`;
           chipsElem.innerText = 'Chips: -';
           seatElem.querySelector('.btn-sit').style.display = 'block';
@@ -687,4 +695,4 @@
     }
   </script>
 </body>
-</html
+</html>
