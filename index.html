@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Shan Koe Mee - Core Game Engine V2.4</title>
+  <title>Shan Koe Mee - System Dealer Engine V3.0</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
@@ -22,30 +22,20 @@
     #my-info { font-size: 12px; color: #f1c40f; margin-bottom: 5px; font-weight: bold; display: flex; gap: 10px; align-items: center; }
 
     .auth-overlay {
-      position: fixed;
-      top: 0; left: 0; width: 100%; height: 100%;
-      background: rgba(0, 0, 0, 0.88);
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      z-index: 1000;
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0, 0, 0, 0.88); display: flex;
+      justify-content: center; align-items: center; z-index: 1000;
     }
 
     .auth-box {
-      background: #1e1e1e;
-      border: 2px solid #ffd700;
-      border-radius: 12px;
-      padding: 20px;
-      width: 300px;
-      text-align: center;
-      box-shadow: 0 0 20px rgba(255, 215, 0, 0.4);
+      background: #1e1e1e; border: 2px solid #ffd700; border-radius: 12px;
+      padding: 20px; width: 300px; text-align: center; box-shadow: 0 0 20px rgba(255, 215, 0, 0.4);
     }
 
     .auth-box h3 { color: #ffd700; margin-bottom: 15px; }
     .auth-box input {
-      width: 100%; padding: 8px; margin: 6px 0;
-      border-radius: 5px; border: 1px solid #444;
-      background: #222; color: #fff;
+      width: 100%; padding: 8px; margin: 6px 0; border-radius: 5px;
+      border: 1px solid #444; background: #222; color: #fff;
     }
 
     .auth-box button {
@@ -62,7 +52,7 @@
     }
 
     .table-container {
-      position: relative; width: 360px; height: 470px;
+      position: relative; width: 360px; height: 490px;
       background: radial-gradient(circle, #1b662f 60%, #0a3314 100%);
       border: 10px solid #4a2810; border-radius: 170px;
       box-shadow: inset 0 0 30px #000, 0 10px 20px rgba(0,0,0,0.8);
@@ -73,12 +63,12 @@
       position: absolute; top: 50%; left: 50%;
       transform: translate(-50%, -50%);
       text-align: center; display: flex; flex-direction: column;
-      align-items: center; gap: 4px;
+      align-items: center; gap: 4px; z-index: 10; width: 180px;
     }
 
     .pot-chips {
       background: #f1c40f; color: #000; font-weight: bold;
-      padding: 4px 10px; border-radius: 15px; font-size: 11px;
+      padding: 3px 8px; border-radius: 12px; font-size: 10px;
       box-shadow: 0 2px 6px rgba(0,0,0,0.6);
     }
 
@@ -86,17 +76,26 @@
       padding: 5px 10px;
       background: linear-gradient(180deg, #ffd700, #ff8c00);
       color: #000; border: none; font-weight: bold; font-size: 10px;
-      border-radius: 15px; cursor: pointer; box-shadow: 0 3px 6px rgba(0,0,0,0.5);
+      border-radius: 12px; cursor: pointer; box-shadow: 0 3px 6px rgba(0,0,0,0.5); width: 100%;
+    }
+    .btn-main:disabled { background: #555; cursor: not-allowed; color: #888; }
+
+    /* Dealer UI Element */
+    .dealer-area {
+      position: absolute; top: -15px; left: 110px; width: 140px; min-height: 110px;
+      background: rgba(20, 20, 20, 0.95); border: 2px solid #e74c3c;
+      border-radius: 8px; display: flex; flex-direction: column;
+      align-items: center; padding: 4px; box-shadow: 0 0 12px rgba(231, 76, 60, 0.6);
     }
 
     .seat {
-      position: absolute; width: 98px; min-height: 125px;
+      position: absolute; width: 95px; min-height: 120px;
       background: rgba(0, 0, 0, 0.85); border: 2px solid #ffd700;
       border-radius: 8px; display: flex; flex-direction: column;
       align-items: center; padding: 4px; box-shadow: 0 4px 8px rgba(0,0,0,0.5);
     }
 
-    .seat.active-turn {
+    .seat.active-turn, .dealer-area.active-turn {
       border: 2px solid #00ffcc !important;
       box-shadow: 0 0 15px #00ffcc; animation: pulse 1.5s infinite;
     }
@@ -107,28 +106,28 @@
       100% { box-shadow: 0 0 5px #00ffcc; }
     }
 
-    #seat-1 { top: -25px; left: 131px; border-color: #e74c3c; }
-    #seat-2 { top: 85px; right: -32px; }
-    #seat-3 { bottom: 15px; right: -12px; }
-    #seat-4 { bottom: 15px; left: -12px; }
-    #seat-5 { top: 85px; left: -32px; }
+    #seat-2 { top: 110px; right: -30px; }
+    #seat-3 { bottom: 15px; right: -10px; }
+    #seat-4 { bottom: 15px; left: -10px; }
+    #seat-5 { top: 110px; left: -30px; }
 
     .player-name { font-size: 8px; color: #ffd700; font-weight: bold; text-align: center; word-break: break-all; }
-    .player-chips { font-size: 9px; color: #2ecc71; margin-bottom: 2px; }
+    .player-chips { font-size: 9px; color: #2ecc71; margin-bottom: 1px; }
+    .player-bet { font-size: 8px; color: #e67e22; font-weight: bold; }
 
     .cards-area {
-      display: flex; gap: 2px; min-height: 40px;
+      display: flex; gap: 2px; min-height: 38px;
       align-items: center; justify-content: center; margin: 2px 0;
     }
     
     .card {
-      width: 25px; height: 36px; background: white; border-radius: 3px;
+      width: 24px; height: 34px; background: white; border-radius: 3px;
       display: flex; flex-direction: column; align-items: center; justify-content: center;
-      font-weight: bold; font-size: 10px; box-shadow: 1px 1px 3px rgba(0,0,0,0.5);
+      font-weight: bold; font-size: 9px; box-shadow: 1px 1px 3px rgba(0,0,0,0.5);
       color: black; line-height: 1;
     }
     .card.red { color: #e74c3c; }
-    .card.back { background: #2980b9; color: #fff; border: 1px solid #fff; font-size: 12px; }
+    .card.back { background: #2980b9; color: #fff; border: 1px solid #fff; font-size: 11px; }
 
     .score-badge {
       background: #c0392b; color: #fff; padding: 1px 4px;
@@ -136,11 +135,11 @@
     }
 
     .btn-sit {
-      background: #27ae60; color: white; border: none; padding: 4px 8px;
-      border-radius: 4px; font-size: 9px; cursor: pointer; margin-top: 4px; font-weight: bold;
+      background: #27ae60; color: white; border: none; padding: 3px 6px;
+      border-radius: 4px; font-size: 8px; cursor: pointer; margin-top: 3px; font-weight: bold;
     }
 
-    .controls { display: flex; gap: 10px; margin-top: 10px; }
+    .controls { display: flex; gap: 10px; margin-top: 8px; }
     .btn-action {
       padding: 8px 16px; border: none; border-radius: 6px;
       font-weight: bold; font-size: 12px; cursor: pointer;
@@ -149,6 +148,16 @@
     .btn-draw { background: #2980b9; color: white; }
     .btn-stay { background: #d35400; color: white; }
     .btn-action:disabled { background: #555; cursor: not-allowed; opacity: 0.6; }
+
+    /* Result Panel Overlay Overlay */
+    .result-panel {
+      position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0,0,0,0.85); border-radius: 160px;
+      display: flex; flex-direction: column; align-items: center;
+      justify-content: center; padding: 15px; z-index: 20; color: #fff; text-align: center;
+    }
+    .result-title { font-size: 14px; font-weight: bold; color: #ffd700; margin-bottom: 5px; }
+    .result-details { font-size: 10px; margin-bottom: 8px; line-height: 1.4; }
   </style>
 </head>
 <body>
@@ -163,7 +172,7 @@
     </div>
   </div>
 
-  <h2>ရှမ်းကိုးမီး (Shan Koe Mee - Core V2.4)</h2>
+  <h2>ရှမ်းကိုးမီး (System Dealer V3.0)</h2>
   <div id="status-text">ချိတ်ဆက်နေပါသည်...</div>
   <div id="my-info">
     <span id="user-display">သင်၏ ID: -</span>
@@ -171,25 +180,34 @@
   </div>
 
   <div class="table-container">
+    
+    <!-- System Dealer Area -->
+    <div class="dealer-area" id="dealer-box">
+      <span class="player-name">🏦 SYSTEM DEALER</span>
+      <span class="player-chips" id="dealer-chips">Bankroll: -</span>
+      <div class="cards-area" id="dealer-cards"></div>
+      <span class="score-badge" id="dealer-score">-</span>
+    </div>
+
     <div class="table-center">
-      <div class="pot-chips" id="pot-display">ဝိုင်းကြေး: 0 Chips 🪙</div>
-      <button class="btn-main" onclick="dealCards()">ဖဲဝေမည် (ကြေး 500) ♠️</button>
-      <button class="btn-main" style="background: #27ae60; color: #fff;" onclick="resetRound()">ပွဲစဉ်သစ်စမည် 🔄</button>
+      <div class="pot-chips" id="pot-display">Total Pot: 0 🪙</div>
+      <button class="btn-main" id="btn-deal" onclick="startBetAndDeal()">ဖဲဝေမည် (Bet: 500) ♠️</button>
+      <button class="btn-main" id="btn-reset" style="background: #27ae60; color: #fff;" onclick="resetRound()">ပွဲစဉ်သစ်စမည် 🔄</button>
       <button class="btn-main" style="background: #c0392b; color: #fff;" onclick="forceClearRoom()">ဝိုင်းသန့်ရှင်းမည် 🧹</button>
     </div>
 
-    <!-- Seats 1 to 5 -->
-    <div class="seat" id="seat-1">
-      <span class="player-name">Seat 1 (🏦 ဒိုင်)</span>
-      <span class="player-chips" id="chips-1">Chips: -</span>
-      <div class="cards-area" id="cards-1"></div>
-      <span class="score-badge" id="score-1">-</span>
-      <button class="btn-sit" onclick="sitDown(1)">ထိုင်မည်</button>
+    <!-- Result Display Overlay inside Table -->
+    <div class="result-panel" id="result-panel" style="display: none;">
+      <div class="result-title" id="res-title">ROUND RESULT</div>
+      <div class="result-details" id="res-details"></div>
+      <button class="btn-main" style="width: 100px;" onclick="closeResultPanel()">ပိတ်မည် ✖</button>
     </div>
 
+    <!-- Seats 2 to 5 (Player Seats Only) -->
     <div class="seat" id="seat-2">
       <span class="player-name">Seat 2</span>
       <span class="player-chips" id="chips-2">Chips: -</span>
+      <span class="player-bet" id="bet-2">Bet: 0</span>
       <div class="cards-area" id="cards-2"></div>
       <span class="score-badge" id="score-2">-</span>
       <button class="btn-sit" onclick="sitDown(2)">ထိုင်မည်</button>
@@ -198,6 +216,7 @@
     <div class="seat" id="seat-3">
       <span class="player-name">Seat 3</span>
       <span class="player-chips" id="chips-3">Chips: -</span>
+      <span class="player-bet" id="bet-3">Bet: 0</span>
       <div class="cards-area" id="cards-3"></div>
       <span class="score-badge" id="score-3">-</span>
       <button class="btn-sit" onclick="sitDown(3)">ထိုင်မည်</button>
@@ -206,6 +225,7 @@
     <div class="seat" id="seat-4">
       <span class="player-name">Seat 4</span>
       <span class="player-chips" id="chips-4">Chips: -</span>
+      <span class="player-bet" id="bet-4">Bet: 0</span>
       <div class="cards-area" id="cards-4"></div>
       <span class="score-badge" id="score-4">-</span>
       <button class="btn-sit" onclick="sitDown(4)">ထိုင်မည်</button>
@@ -214,6 +234,7 @@
     <div class="seat" id="seat-5">
       <span class="player-name">Seat 5</span>
       <span class="player-chips" id="chips-5">Chips: -</span>
+      <span class="player-bet" id="bet-5">Bet: 0</span>
       <div class="cards-area" id="cards-5"></div>
       <span class="score-badge" id="score-5">-</span>
       <button class="btn-sit" onclick="sitDown(5)">ထိုင်မည်</button>
@@ -248,7 +269,7 @@
     let currentUser = null;
     let isLoginMode = true;
     let currentRoomData = null;
-    const BET_AMOUNT = 500;
+    const DEFAULT_BET = 500;
 
     const cardSuits = ["♠", "♥", "♦", "♣"];
     const cardFaces = ["A", "2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K"];
@@ -326,7 +347,7 @@
 
     function getMySeatKey() {
       if (!currentRoomData || !currentRoomData.seats || !currentUser) return null;
-      for (let i = 1; i <= 5; i++) {
+      for (let i = 2; i <= 5; i++) {
         const seat = currentRoomData.seats[`seat${i}`];
         if (seat && seat.id === currentUser.uid) {
           return `seat${i}`;
@@ -339,13 +360,21 @@
       const docSnap = await getDoc(roomRef);
       if (!docSnap.exists()) {
         await setDoc(roomRef, {
-          status: "စောင့်ဆိုင်းနေသည် (ထိုင်ခုံယူပါ)",
           gameState: "WAITING",
+          roundId: "round_" + Date.now(),
+          settled: false,
+          status: "စောင့်ဆိုင်းနေသည် (ထိုင်ခုံယူပါ)",
           pot: 0,
           currentTurn: null,
           deck: [],
-          dealerSeat: "seat1",
-          seats: { seat1: null, seat2: null, seat3: null, seat4: null, seat5: null }
+          dealer: {
+            name: "🏦 SYSTEM DEALER",
+            chips: 1000000,
+            cards: [],
+            score: 0,
+            hasStayed: false
+          },
+          seats: { seat2: null, seat3: null, seat4: null, seat5: null }
         });
       }
 
@@ -353,21 +382,33 @@
         if (snapshot.exists()) {
           currentRoomData = snapshot.data();
           updateUI();
+          
+          // Automatic trigger for dealer logic if state transitions to DEALER_TURN
+          if (currentRoomData.gameState === "DEALER_TURN" && currentRoomData.currentTurn === "dealer") {
+            runDealerEngine();
+          }
         }
       });
     }
 
-    // ဝိုင်းထဲရှိ ပိတ်မိနေသော Ghost Player များကို အတင်းအဓမ္မ ရှင်းထုတ်သည့် function
     window.forceClearRoom = async function() {
-      if(confirm("ဝိုင်းထဲရှိ ပိတ်မိနေသော ကစားသမားဟောင်းများကို ရှင်းထုတ်မည်မှာ သေချာပါသလား။")) {
+      if(confirm("ဝိုင်းအားလုံးကို မူလအတိုင်း Reset လုပ်မည်မှာ သေချာပါသလား။")) {
         await setDoc(roomRef, {
-          status: "စောင့်ဆိုင်းနေသည် (ထိုင်ခုံယူပါ)",
           gameState: "WAITING",
+          roundId: "round_" + Date.now(),
+          settled: false,
+          status: "စောင့်ဆိုင်းနေသည် (ထိုင်ခုံယူပါ)",
           pot: 0,
           currentTurn: null,
           deck: [],
-          dealerSeat: "seat1",
-          seats: { seat1: null, seat2: null, seat3: null, seat4: null, seat5: null }
+          dealer: {
+            name: "🏦 SYSTEM DEALER",
+            chips: 1000000,
+            cards: [],
+            score: 0,
+            hasStayed: false
+          },
+          seats: { seat2: null, seat3: null, seat4: null, seat5: null }
         });
         alert("ဝိုင်းအားလုံး သန့်ရှင်းပြီးပါပြီ!");
       }
@@ -385,64 +426,90 @@
       let updates = {};
       if (currentSeat) updates[`seats.${currentSeat}`] = null;
 
-      const isDealer = (seatNum === 1);
       const uName = currentUser.email.split('@')[0];
       updates[`seats.${targetSeat}`] = {
         id: currentUser.uid,
-        name: isDealer ? "🏦 ဒိုင် (" + uName + ")" : uName,
-        chips: isDealer ? 50000 : 10000,
+        name: uName,
+        chips: 10000,
+        bet: 0,
         cards: [],
         score: 0,
-        hasStayed: false
+        hasStayed: false,
+        result: null,
+        payout: 0
       };
 
       await updateDoc(roomRef, updates);
     };
 
-    window.dealCards = async function() {
+    // BET & DEAL ENGINE
+    window.startBetAndDeal = async function() {
       const snap = await getDoc(roomRef);
-      const seats = snap.data().seats || {};
+      const room = snap.data();
+      const seats = room.seats || {};
 
-      if (!seats.seat1) return alert("ဝိုင်းစရန်အတွက် Seat 1 တွင် ဒိုင် ထိုင်ရပါမည်!");
-
-      let deck = createShuffledDeck();
-      let updates = { 
-        gameState: "PLAYER_TURN", 
-        pot: 0 
-      };
-      let activePlayers = [];
-
-      for (let i = 1; i <= 5; i++) {
-        const sKey = `seat${i}`;
-        if (seats[sKey]) {
-          let currentChips = Number(seats[sKey].chips) || 10000;
-          
-          if (i !== 1) {
-            if (currentChips < BET_AMOUNT) {
-              updates[`seats.${sKey}`] = null;
-              continue;
-            }
-            updates[`seats.${sKey}.chips`] = currentChips - BET_AMOUNT;
-            updates.pot += BET_AMOUNT;
-            activePlayers.push(sKey);
-          }
-
-          let c1 = deck.pop();
-          let c2 = deck.pop();
-          let score = (getCardValue(c1.face) + getCardValue(c2.face)) % 10;
-
-          updates[`seats.${sKey}.cards`] = [c1, c2];
-          updates[`seats.${sKey}.score`] = score;
-          updates[`seats.${sKey}.hasStayed`] = (i === 1) ? false : (score >= 8); 
-        }
+      let activeSeatKeys = [];
+      for (let i = 2; i <= 5; i++) {
+        if (seats[`seat${i}`]) activeSeatKeys.push(`seat${i}`);
       }
 
-      if (activePlayers.length === 0) return alert("ကစားမည့် Player များ မရှိသေးပါ!");
+      if (activeSeatKeys.length === 0) return alert("ကစားမည့် Player အနည်းဆုံး ၁ ယောက် ထိုင်ပေးရန် လိုအပ်ပါသည်!");
 
+      let deck = createShuffledDeck();
+      let totalPot = 0;
+      let updates = {
+        gameState: "DEALING",
+        roundId: "round_" + Date.now(),
+        settled: false,
+        pot: 0
+      };
+
+      // 1. Process Bets and Deal Cards for Active Players
+      for (let sKey of activeSeatKeys) {
+        let p = seats[sKey];
+        if (p.chips < DEFAULT_BET) {
+          alert(`${p.name} တွင် လောင်းကြေး 500 Chips မပြည့်ပါ!`);
+          return;
+        }
+
+        let c1 = deck.pop();
+        let c2 = deck.pop();
+        let score = (getCardValue(c1.face) + getCardValue(c2.face)) % 10;
+
+        updates[`seats.${sKey}.chips`] = p.chips - DEFAULT_BET;
+        updates[`seats.${sKey}.bet`] = DEFAULT_BET;
+        updates[`seats.${sKey}.cards`] = [c1, c2];
+        updates[`seats.${sKey}.score`] = score;
+        updates[`seats.${sKey}.hasStayed`] = (score >= 8); // Auto-stay on Pok
+        updates[`seats.${sKey}.result`] = null;
+        updates[`seats.${sKey}.payout`] = 0;
+
+        totalPot += DEFAULT_BET;
+      }
+
+      // 2. Deal Cards for System Dealer
+      let d1 = deck.pop();
+      let d2 = deck.pop();
+      let dScore = (getCardValue(d1.face) + getCardValue(d2.face)) % 10;
+
+      updates[`dealer.cards`] = [d1, d2];
+      updates[`dealer.score`] = dScore;
+      updates[`dealer.hasStayed`] = (dScore >= 8);
+      updates.pot = totalPot;
       updates.deck = deck;
-      const firstTurnPlayer = activePlayers.find(s => !updates[`seats.${s}.hasStayed`]) || activePlayers[0];
-      updates.currentTurn = firstTurnPlayer;
-      updates.status = `${firstTurnPlayer.toUpperCase()} ၏ ဖဲဆွဲအလှည့် ဖြစ်ပါသည်`;
+
+      // 3. Set Turn State
+      const firstPlayer = activeSeatKeys.find(sKey => !updates[`seats.${sKey}.hasStayed`]);
+      if (firstPlayer) {
+        updates.gameState = "PLAYER_TURN";
+        updates.currentTurn = firstPlayer;
+        updates.status = `${firstPlayer.toUpperCase()} ၏ ဖဲဆွဲအလှည့် ဖြစ်ပါသည်`;
+      } else {
+        // All active players hit Pok -> direct to dealer turn
+        updates.gameState = "DEALER_TURN";
+        updates.currentTurn = "dealer";
+        updates.status = "🏦 SYSTEM DEALER အလှည့်သို့ ရောက်ရှိပါပြီ";
+      }
 
       await updateDoc(roomRef, updates);
     };
@@ -450,7 +517,6 @@
     window.drawCard = async function() {
       let mySeat = getMySeatKey();
       if (!mySeat) return alert("ထိုင်ခုံ အရင်ယူပါ!");
-      if (mySeat === "seat1") return alert("ဒိုင်သည် Player များ အားလုံးပြီးမှ ဖဲဆွဲခွင့်ရှိပါမည်!");
       if (currentRoomData.currentTurn !== mySeat) return alert("သင်၏ အလှည့် မဟုတ်သေးပါ!");
 
       const snap = await getDoc(roomRef);
@@ -482,7 +548,6 @@
     window.stay = async function() {
       let mySeat = getMySeatKey();
       if (!mySeat) return alert("ထိုင်ခုံ အရင်ယူပါ!");
-      if (mySeat === "seat1") return alert("ဒိုင် အလှည့် မဟုတ်သေးပါ!");
       if (currentRoomData.currentTurn !== mySeat) return alert("သင်၏ အလှည့် မဟုတ်သေးပါ!");
 
       await updateDoc(roomRef, {
@@ -515,102 +580,174 @@
           status: `${nextTurn.toUpperCase()} ၏ ဖဲဆွဲအလှည့် ဖြစ်ပါသည်`
         });
       } else {
-        runDealerEngine();
+        // All players done -> Dealer turn
+        await updateDoc(roomRef, {
+          gameState: "DEALER_TURN",
+          currentTurn: "dealer",
+          status: "🏦 SYSTEM DEALER ဖဲလှန်/ဆွဲနေပါသည်..."
+        });
       }
     }
 
+    // SYSTEM DEALER ENGINE & PAYOUT ENGINE
     async function runDealerEngine() {
-      await updateDoc(roomRef, {
-        currentTurn: "seat1",
-        status: "🏦 ဒိုင် ဖဲလှန်/ဆွဲနေသည်..."
-      });
-
       const snap = await getDoc(roomRef);
       let room = snap.data();
-      let dealer = room.seats.seat1;
+
+      // Prevent race conditions / double runs
+      if (room.gameState !== "DEALER_TURN" || room.settled) return;
+
+      let dealer = room.dealer;
       let deck = room.deck;
 
-      if (dealer && dealer.score < 6 && dealer.cards.length < 3 && deck.length > 0) {
+      // Dealer Draw Rule: score < 6 and cards < 3
+      if (dealer.score < 6 && dealer.cards.length < 3 && deck.length > 0) {
         let card = deck.pop();
         dealer.cards.push(card);
         dealer.score = dealer.cards.reduce((acc, c) => acc + getCardValue(c.face), 0) % 10;
       }
+      dealer.hasStayed = true;
 
-      if (dealer) dealer.hasStayed = true;
-      
-      let dealerChips = dealer ? dealer.chips : 0;
+      // PAYOUT CALCULATION ENGINE
+      let dealerChips = dealer.chips;
       let seats = room.seats;
 
       for (let i = 2; i <= 5; i++) {
         let sKey = `seat${i}`;
-        if (seats[sKey] && seats[sKey].cards && seats[sKey].cards.length > 0) {
-          let pScore = seats[sKey].score;
+        let p = seats[sKey];
+
+        if (p && p.cards && p.cards.length > 0 && p.bet > 0) {
+          let pScore = p.score;
           let dScore = dealer.score;
 
           if (pScore > dScore) {
-            seats[sKey].chips += (BET_AMOUNT * 2);
-            dealerChips -= BET_AMOUNT;
-          } else if (pScore === dScore) {
-            seats[sKey].chips += BET_AMOUNT;
+            // Player Wins
+            let winAmount = p.bet;
+            let totalReturn = p.bet + winAmount; // Stake returned + Win
+            p.chips += totalReturn;
+            dealerChips -= winAmount;
+            p.result = "WIN";
+            p.payout = winAmount;
+          } else if (pScore < dScore) {
+            // Dealer Wins
+            dealerChips += p.bet;
+            p.result = "LOSE";
+            p.payout = -p.bet;
           } else {
-            dealerChips += BET_AMOUNT;
+            // Push / Draw
+            p.chips += p.bet; // Stake returned
+            p.result = "PUSH";
+            p.payout = 0;
           }
         }
       }
 
-      if (dealer) seats.seat1.chips = dealerChips;
+      dealer.chips = dealerChips;
 
+      // Atomic Update Firestore to Settlement
       await updateDoc(roomRef, {
+        dealer: dealer,
         seats: seats,
-        currentTurn: "END",
+        settled: true,
         gameState: "RESULT",
-        status: "ပွဲပြီးပါပြီ! ဒိုင် နှင့် Player များ အနိုင်အရှုံး စာရင်းရှင်းပြီးပါပြီ။"
+        currentTurn: "END",
+        status: "ပွဲပြီးပါပြီ! အနိုင်အရှုံး စာရင်းတွက်ချက်ပြီးပါပြီ။"
       });
     }
 
     window.resetRound = async function() {
       const snap = await getDoc(roomRef);
       const seats = snap.data().seats || {};
-      let updates = { 
-        status: "စောင့်ဆိုင်းနေသည် (ဖဲဝေပါ)", 
+      let updates = {
         gameState: "WAITING",
-        currentTurn: null, 
-        pot: 0, 
-        deck: [] 
+        status: "စောင့်ဆိုင်းနေသည် (ဖဲဝေပါ)",
+        currentTurn: null,
+        pot: 0,
+        deck: [],
+        "dealer.cards": [],
+        "dealer.score": 0,
+        "dealer.hasStayed": false
       };
 
-      for (let i = 1; i <= 5; i++) {
+      for (let i = 2; i <= 5; i++) {
         const sKey = `seat${i}`;
         if (seats[sKey]) {
           updates[`seats.${sKey}.cards`] = [];
           updates[`seats.${sKey}.score`] = 0;
+          updates[`seats.${sKey}.bet`] = 0;
           updates[`seats.${sKey}.hasStayed`] = false;
+          updates[`seats.${sKey}.result`] = null;
+          updates[`seats.${sKey}.payout`] = 0;
         }
       }
       await updateDoc(roomRef, updates);
+      document.getElementById("result-panel").style.display = "none";
+    };
+
+    window.closeResultPanel = function() {
+      document.getElementById("result-panel").style.display = "none";
     };
 
     function updateUI() {
       if (!currentRoomData) return;
 
       document.getElementById("status-text").innerText = "Status: " + currentRoomData.status;
-      document.getElementById("pot-display").innerText = `ဝိုင်းကြေး: ${currentRoomData.pot || 0} Chips 🪙`;
+      document.getElementById("pot-display").innerText = `Total Pot: ${currentRoomData.pot || 0} 🪙`;
 
       let mySeatKey = getMySeatKey();
-      let isMyTurn = (currentRoomData.currentTurn === mySeatKey) && mySeatKey !== null && mySeatKey !== "seat1";
+      let isMyTurn = (currentRoomData.currentTurn === mySeatKey) && mySeatKey !== null && currentRoomData.gameState === "PLAYER_TURN";
 
+      // Control Buttons state mapping
       document.getElementById("btn-draw-card").disabled = !isMyTurn;
       document.getElementById("btn-stay-card").disabled = !isMyTurn;
+      document.getElementById("btn-deal").disabled = (currentRoomData.gameState !== "WAITING");
 
+      // RENDER DEALER UI
+      const dealer = currentRoomData.dealer || {};
+      const dealerBox = document.getElementById("dealer-box");
+      const dealerCardsElem = document.getElementById("dealer-cards");
+      const dealerScoreElem = document.getElementById("dealer-score");
+      document.getElementById("dealer-chips").innerText = `Bankroll: ${dealer.chips || 0}`;
+
+      if (currentRoomData.currentTurn === "dealer") {
+        dealerBox.classList.add("active-turn");
+      } else {
+        dealerBox.classList.remove("active-turn");
+      }
+
+      dealerCardsElem.innerHTML = '';
+      if (dealer.cards && dealer.cards.length > 0) {
+        const isResultState = (currentRoomData.gameState === "RESULT" || currentRoomData.gameState === "DEALER_TURN");
+        dealer.cards.forEach((c, index) => {
+          // Casino style: Hide 1st card until Dealer Turn/Result State
+          if (index === 0 && !isResultState) {
+            dealerCardsElem.innerHTML += `<div class="card back">🂠</div>`;
+          } else {
+            const isRed = (c.suit === "♥" || c.suit === "♦") ? "red" : "";
+            dealerCardsElem.innerHTML += `<div class="card ${isRed}">${c.face}<br>${c.suit}</div>`;
+          }
+        });
+
+        if (isResultState) {
+          let dText = dealer.score === 9 ? "၉ ပေါက် (Pok)" : dealer.score === 8 ? "၈ ပေါက် (Pok)" : `${dealer.score} ပေါက်`;
+          dealerScoreElem.innerText = dText;
+        } else {
+          dealerScoreElem.innerText = '???';
+        }
+      } else {
+        dealerScoreElem.innerText = '-';
+      }
+
+      // RENDER PLAYER SEATS (Seats 2-5)
       const seats = currentRoomData.seats || {};
-
-      for (let i = 1; i <= 5; i++) {
+      for (let i = 2; i <= 5; i++) {
         const seatKey = `seat${i}`;
         const seatData = seats[seatKey];
         const seatElem = document.getElementById(`seat-${i}`);
         const cardsElem = document.getElementById(`cards-${i}`);
         const scoreElem = document.getElementById(`score-${i}`);
         const chipsElem = document.getElementById(`chips-${i}`);
+        const betElem = document.getElementById(`bet-${i}`);
 
         if (currentRoomData.currentTurn === seatKey) {
           seatElem.classList.add("active-turn");
@@ -621,11 +758,12 @@
         if (seatData) {
           seatElem.querySelector('.player-name').innerText = seatData.name;
           chipsElem.innerText = `Chips: ${seatData.chips}`;
+          betElem.innerText = `Bet: ${seatData.bet || 0}`;
           seatElem.querySelector('.btn-sit').style.display = 'none';
 
           cardsElem.innerHTML = '';
           const isMySeat = (mySeatKey === seatKey);
-          const isRoundEnd = (currentRoomData.currentTurn === "END");
+          const isRoundEnd = (currentRoomData.gameState === "RESULT");
 
           if (seatData.cards && seatData.cards.length > 0) {
             seatData.cards.forEach(c => {
@@ -647,12 +785,40 @@
             scoreElem.innerText = '-';
           }
         } else {
-          seatElem.querySelector('.player-name').innerText = (i === 1) ? "Seat 1 (🏦 ဒိုင်)" : `Seat ${i}`;
+          seatElem.querySelector('.player-name').innerText = `Seat ${i}`;
           chipsElem.innerText = 'Chips: -';
+          betElem.innerText = 'Bet: 0';
           seatElem.querySelector('.btn-sit').style.display = 'block';
           cardsElem.innerHTML = '';
           scoreElem.innerText = '-';
         }
+      }
+
+      // RENDER RESULT OVERLAY PANEL
+      if (currentRoomData.gameState === "RESULT" && mySeatKey && seats[mySeatKey]) {
+        const myRes = seats[mySeatKey];
+        const resPanel = document.getElementById("result-panel");
+        const resTitle = document.getElementById("res-title");
+        const resDetails = document.getElementById("res-details");
+
+        resPanel.style.display = "flex";
+        if (myRes.result === "WIN") {
+          resTitle.innerText = "🏆 YOU WIN!";
+          resTitle.style.color = "#2ecc71";
+        } else if (myRes.result === "LOSE") {
+          resTitle.innerText = "💥 YOU LOSE!";
+          resTitle.style.color = "#e74c3c";
+        } else {
+          resTitle.innerText = "🤝 PUSH / DRAW";
+          resTitle.style.color = "#f1c40f";
+        }
+
+        resDetails.innerHTML = `
+          <b>Dealer:</b> ${dealer.score} ပေါက် VS <b>You:</b> ${myRes.score} ပေါက်<br>
+          <b>Bet:</b> ${myRes.bet} Chips<br>
+          <b>Payout Return:</b> ${myRes.result === "WIN" ? "+" + (myRes.bet * 2) : myRes.result === "PUSH" ? myRes.bet : 0} Chips<br>
+          <b>Current Balance:</b> ${myRes.chips} Chips
+        `;
       }
     }
   </script>
